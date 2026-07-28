@@ -16,13 +16,9 @@ repositories {
 
 dependencies {
     minecraft "com.mojang:minecraft:26.2"
-    
-    // Add this exact line here!
     mappings loom.officialMojangMappings()
-    
     modImplementation "net.fabricmc:fabric-loader:0.19.3"
     modImplementation "net.fabricmc.fabric-api:fabric-api:0.155.3+26.3"
-}
 }
 
 java {
@@ -31,10 +27,10 @@ java {
     }
 }
 
-// Pull in the shared mixin + resources from ../common
+// Pull in the shared mixin + resources from common
 sourceSets {
     main {
-        java.srcDirs += "../common/src/main/java"
-        resources.srcDirs += "../common/src/main/resources"
+        java.srcDirs += "common/src/main/java"
+        resources.srcDirs += "common/src/main/resources"
     }
 }

@@ -25,15 +25,13 @@ jobs:
           # Gradle 9.1.0 is required for Java 25 support
           gradle-version: 9.1.0      
 
-      # Finds the folder that actually contains settings.gradle, no matter how deep
-      # the project got nested by an upload. Fails loudly with a clear message if it's
-      # missing entirely, instead of a confusing Gradle error.
+      # Finds the folder that actually contains settings.gradle
       - name: Locate the Gradle project root        
         id: locate        
         run: |          
           MATCH=$(find . -maxdepth 4 -name settings.gradle | head -n 1)          
           if [ -z "$MATCH" ]; then            
-            echo "::error::No settings.gradle found anywhere in this repo (searched 4 folders deep). Check that the project files were actually uploaded."            
+            echo "::error::No settings.gradle found anywhere in this repo. Check that the project files were actually uploaded."            
             exit 1          
           fi          
           DIR=$(dirname "$MATCH")          
@@ -42,12 +40,10 @@ jobs:
 
       - name: Build Fabric with Gradle        
         working-directory: ${{ steps.locate.outputs.dir }}        
-        # Uses the standard build command now that the project is flattened
         run: gradle build --no-daemon      
 
       - name: Upload built mod jar        
         uses: actions/upload-artifact@v4        
         with:          
           name: floatify-fabric-jar          
-          # Looks in the root build/libs/ folder instead of fabric/build/libs/
           path: ${{ steps.locate.outputs.dir }}/build/libs/*.jar

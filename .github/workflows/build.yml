@@ -1,51 +1,30 @@
-name: Build mod
-
-on:
-  push:
-    branches: [ "main" ]
-  pull_request:
-  workflow_dispatch:
+name: Build Floatify (Fabric)
+on: [push, pull_request]
 
 jobs:
-  build:
+  build-fabric:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
+      - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Set up JDK 17
+      - name: Setup Java
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
-          java-version: '17'
+          # Java 25 toolchain is required for 26.1+ on both loaders[cite: 2, 5]
+          java-version: '25' 
 
-      - name: Set up Gradle
+      - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v3
-        with:
-          gradle-version: 8.1.1
 
-      # Finds the folder that actually contains settings.gradle, no matter how deep
-      # the project got nested by an upload (e.g. repo/corruptedmod-forge/settings.gradle
-      # instead of repo/settings.gradle). Fails loudly with a clear message if it's
-      # missing entirely, instead of a confusing Gradle error.
-      - name: Locate the Gradle project root
-        id: locate
-        run: |
-          MATCH=$(find . -maxdepth 4 -name settings.gradle | head -n 1)
-          if [ -z "$MATCH" ]; then
-            echo "::error::No settings.gradle found anywhere in this repo (searched 4 folders deep). Check that the project files were actually uploaded."
-            exit 1
-          fi
-          DIR=$(dirname "$MATCH")
-          echo "Found Gradle project at: $DIR"
-          echo "dir=$DIR" >> "$GITHUB_OUTPUT"
+      - name: Build Fabric Mod
+        # Specifically targets the Fabric module's build task[cite: 2]
+        run: chmod +x gradlew && ./gradlew :fabric:build
 
-      - name: Build with Gradle
-        working-directory: ${{ steps.locate.outputs.dir }}
-        run: gradle build --no-daemon
-
-      - name: Upload built mod jar
+      - name: Upload Fabric Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: floatify-jar
-          path: ${{ steps.locate.outputs.dir }}/build/libs/*.jar
+          name: floatify-fabric
+          # The compiled jar will be located in this directory[cite: 2]
+          path: fabric/build/libs/

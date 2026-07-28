@@ -1,6 +1,6 @@
 plugins {
-    // Bump this to a newer version so it no longer requires mappings!
-    id 'fabric-loom' version '1.19.0' 
+    // The modern plugin ID for unobfuscated MC 26.1+
+    id 'net.fabricmc.fabric-loom' version '1.17.12'
     id 'java'
 }
 
@@ -18,7 +18,7 @@ repositories {
 dependencies {
     minecraft "com.mojang:minecraft:26.2"
     
-    // THE MAPPINGS LINE IS COMPLETELY DELETED
+    // Mappings line is removed since the new plugin natively supports unobfuscated MC
     
     modImplementation "net.fabricmc:fabric-loader:0.19.3"
     modImplementation "net.fabricmc.fabric-api:fabric-api:0.155.3+26.3"

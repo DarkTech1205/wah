@@ -22,8 +22,8 @@ jobs:
       - name: Set up Gradle        
         uses: gradle/actions/setup-gradle@v3        
         with:          
-          # Using 'release' gets the latest Gradle version to ensure Java 25 compatibility
-          gradle-version: release      
+          # Hardcoded to a specific version that supports Java 25
+          gradle-version: 8.12      
 
       # Finds the folder that actually contains settings.gradle, no matter how deep
       # the project got nested by an upload (e.g. repo/floatify-26.2/settings.gradle

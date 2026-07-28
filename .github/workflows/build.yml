@@ -22,8 +22,8 @@ jobs:
       - name: Set up Gradle        
         uses: gradle/actions/setup-gradle@v3        
         with:          
-          # Gradle 9.1.0 is required for Java 25 support
-          gradle-version: 9.1.0      
+          # Updated to match Loom 1.18.0-alpha.9's exact requirement
+          gradle-version: 9.6.0     
 
       # Finds the folder that actually contains settings.gradle
       - name: Locate the Gradle project root        

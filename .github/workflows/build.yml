@@ -22,8 +22,8 @@ jobs:
       - name: Set up Gradle        
         uses: gradle/actions/setup-gradle@v3        
         with:          
-          # Hardcoded to a specific version that supports Java 25
-          gradle-version: 8.12      
+          # Gradle 9.1.0 or higher is required for Java 25 support
+          gradle-version: 9.1.0      
 
       # Finds the folder that actually contains settings.gradle, no matter how deep
       # the project got nested by an upload (e.g. repo/floatify-26.2/settings.gradle

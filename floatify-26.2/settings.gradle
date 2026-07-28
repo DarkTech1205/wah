@@ -1,0 +1,4 @@
+rootProject.name = 'floatify'
+
+include 'fabric'
+include 'neoforge'

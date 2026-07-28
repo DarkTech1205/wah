@@ -1,7 +1,1 @@
 rootProject.name = 'floatify'
-sourceSets {
-    main {
-        java.srcDirs += "common/src/main/java"
-        resources.srcDirs += "common/src/main/resources"
-    }
-}

@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "id": "floatify",
+  "version": "2.0.0",
+  "name": "Floatify",
+  "description": "Truncates entity position and velocity to float precision.",
+  "authors": ["you"],
+  "license": "CC0-1.0",
+  "environment": "*",
+  "entrypoints": {
+    "main": ["com.example.floatify.FloatifyFabric"]
+  },
+  "mixins": ["floatify.mixins.json"],
+  "depends": {
+    "fabricloader": ">=0.19.3",
+    "minecraft": "26.2",
+    "java": ">=25"
+  }
+}

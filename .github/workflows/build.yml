@@ -22,12 +22,11 @@ jobs:
       - name: Set up Gradle        
         uses: gradle/actions/setup-gradle@v3        
         with:          
-          # Gradle 9.1.0 or higher is required for Java 25 support
+          # Gradle 9.1.0 is required for Java 25 support
           gradle-version: 9.1.0      
 
       # Finds the folder that actually contains settings.gradle, no matter how deep
-      # the project got nested by an upload (e.g. repo/floatify-26.2/settings.gradle
-      # instead of repo/settings.gradle). Fails loudly with a clear message if it's
+      # the project got nested by an upload. Fails loudly with a clear message if it's
       # missing entirely, instead of a confusing Gradle error.
       - name: Locate the Gradle project root        
         id: locate        
@@ -43,10 +42,12 @@ jobs:
 
       - name: Build Fabric with Gradle        
         working-directory: ${{ steps.locate.outputs.dir }}        
-        run: gradle :fabric:build --no-daemon      
+        # Uses the standard build command now that the project is flattened
+        run: gradle build --no-daemon      
 
       - name: Upload built mod jar        
         uses: actions/upload-artifact@v4        
         with:          
           name: floatify-fabric-jar          
-          path: ${{ steps.locate.outputs.dir }}/fabric/build/libs/*.jar
+          # Looks in the root build/libs/ folder instead of fabric/build/libs/
+          path: ${{ steps.locate.outputs.dir }}/build/libs/*.jar

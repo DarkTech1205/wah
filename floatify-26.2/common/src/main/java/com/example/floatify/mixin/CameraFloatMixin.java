@@ -1,45 +1,35 @@
 package com.example.floatify.mixin;
 
-import net.minecraft.client.Camera;
-import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.renderer.GameRenderer;
-import net.minecraft.client.renderer.LevelRenderer;
-import net.minecraft.client.renderer.LightTexture;
 import org.joml.Matrix4f;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.Redirect;
 
-@Mixin(LevelRenderer.class)
+@Mixin(GameRenderer.class)
 public class CameraFloatMixin {
 
-    private static final float FLOAT_AMPLITUDE = 0.12F;
-    private static final float FLOAT_FREQUENCY = 0.004F;
-
-    @Inject(
-        method = "render",
-        at = @At("HEAD")
+    /**
+     * Brute-forces the floating effect by intercepting the exact moment the 
+     * JOML float matrix applies the camera's yaw (rotationY). 
+     * This avoids needing to import volatile Minecraft classes that break the build.
+     */
+    @Redirect(
+        method = "renderLevel",
+        at = @At(
+            value = "INVOKE",
+            target = "Lorg/joml/Matrix4f;rotationY(F)Lorg/joml/Matrix4f;"
+        )
     )
-    private void floatify$forceFloatingCameraTransform(
-        DeltaTracker deltaTracker,
-        boolean renderBlockOutline,
-        Camera camera,
-        GameRenderer gameRenderer,
-        LightTexture lightTexture,
-        Matrix4f projectionMatrix,
-        Matrix4f modelViewMatrix,
-        CallbackInfo ci
-    ) {
-        if (modelViewMatrix == null) {
-            return;
-        }
-
-        // Calculate a smooth vertical sine-wave offset based on system time
-        double currentTime = System.currentTimeMillis();
-        float verticalOffset = (float) Math.sin(currentTime * FLOAT_FREQUENCY) * FLOAT_AMPLITUDE;
-
-        // Directly translate the model-view matrix using float precision
-        modelViewMatrix.translate(0.0F, verticalOffset, 0.0F);
+    private Matrix4f floatify$applyFloatingCameraTransform(Matrix4f matrix, float angle) {
+        // 1. Let vanilla apply the normal camera rotation first
+        matrix.rotationY(angle);
+        
+        // 2. Brute-force our float-precision translation directly into the matrix
+        float verticalOffset = (float) Math.sin(System.currentTimeMillis() * 0.004) * 0.12F;
+        matrix.translate(0.0F, verticalOffset, 0.0F);
+        
+        // 3. Return the modified matrix to the rendering pipeline
+        return matrix;
     }
 }

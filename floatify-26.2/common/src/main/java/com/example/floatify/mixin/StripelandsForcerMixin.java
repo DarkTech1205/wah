@@ -3,43 +3,27 @@ package com.example.floatify.mixin;
 import com.mojang.blaze3d.vertex.PoseStack;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.ModifyArg;
+import org.spongepowered.asm.mixin.injection.ModifyArgs;
+import org.spongepowered.asm.mixin.injection.invoke.arg.Args;
 
 @Mixin(PoseStack.class)
 public class StripelandsForcerMixin {
 
     /**
-     * Truncates double-precision matrix translations down to 32-bit floats.
-     * This forces world and chunk rendering transformations to lose precision past 16,777,216,
-     * successfully reviving the classic Stripelands vertex jitter and tearing.
+     * Truncates all three translation axes (X, Y, Z) of the PoseStack down to 
+     * 32-bit floats simultaneously, forcing the Stripelands vertex tearing at high coordinates.
      */
-    @ModifyArg(
+    @ModifyArgs(
         method = "translate(DDD)V",
-        at = @At(value = "HEAD"),
-        index = 0,
-        require = 0
+        at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/vertex/PoseStack$Pose;translate(DDD)Lcom/mojang/blaze3d/vertex/PoseStack$Pose;")
     )
-    private double floatify$truncateTranslateX(double x) {
-        return (float) x;
-    }
+    private static void floatify$truncatePoseTranslation(Args args) {
+        double x = args.get(0);
+        double y = args.get(1);
+        double z = args.get(2);
 
-    @ModifyArg(
-        method = "translate(DDD)V",
-        at = @At(value = "HEAD"),
-        index = 1,
-        require = 0
-    )
-    private double floatify$truncateTranslateY(double y) {
-        return (float) y;
-    }
-
-    @ModifyArg(
-        method = "translate(DDD)V",
-        at = @At(value = "HEAD"),
-        index = 2,
-        require = 0
-    )
-    private double floatify$truncateTranslateZ(double z) {
-        return (float) z;
+        args.set(0, (double) (float) x);
+        args.set(1, (double) (float) y);
+        args.set(2, (double) (float) z);
     }
 }

@@ -1,37 +1,36 @@
 package com.example.floatify.mixin;
 
-import net.minecraft.client.renderer.GameRenderer;
-import org.joml.Matrix4f;
+import net.minecraft.client.Camera;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.ModifyArg;
+import org.spongepowered.asm.mixin.injection.ModifyVariable;
 
-@Mixin(GameRenderer.class)
+@Mixin(Camera.class)
 public class CameraFloatMixin {
 
     /**
-     * Brute-forces the floating effect by intercepting the exact moment GameRenderer 
-     * uploads the final view matrix to the rendering engine. 
-     * 
-     * This avoids any volatile Minecraft package imports (like LightTracker/DeltaTracker),
-     * guarantees the build passes, and applies the float offset jitter-free.
+     * Truncates the camera's X position to 32-bit float.
+     * This destroys double-precision relative rendering, reviving the 
+     * classic vertex jitter/Stripelands effect at high coordinates.
      */
-    @ModifyArg(
-        method = "renderLevel",
-        at = @At(
-            value = "INVOKE",
-            target = "Lcom/mojang/blaze3d/systems/RenderSystem;setModelViewMatrix(Lorg/joml/Matrix4f;)V"
-        ),
-        index = 0
-    )
-    private Matrix4f floatify$forceFloatingCameraTransform(Matrix4f matrix) {
-        // Calculate the smooth sine wave based on real-time ticks
-        float verticalOffset = (float) Math.sin(System.currentTimeMillis() * 0.004) * 0.12F;
-        
-        // Translate the float-precision matrix directly before it hits the shaders
-        matrix.translate(0.0F, verticalOffset, 0.0F);
-        
-        // Return the injected matrix back to the rendering pipeline
-        return matrix;
+    @ModifyVariable(method = "setPosition(DDD)V", at = @At("HEAD"), ordinal = 0, argsOnly = true)
+    private double floatify$truncateX(double x) {
+        return (float) x;
+    }
+
+    /**
+     * Truncates the camera's Y position to 32-bit float.
+     */
+    @ModifyVariable(method = "setPosition(DDD)V", at = @At("HEAD"), ordinal = 1, argsOnly = true)
+    private double floatify$truncateY(double y) {
+        return (float) y;
+    }
+
+    /**
+     * Truncates the camera's Z position to 32-bit float.
+     */
+    @ModifyVariable(method = "setPosition(DDD)V", at = @At("HEAD"), ordinal = 2, argsOnly = true)
+    private double floatify$truncateZ(double z) {
+        return (float) z;
     }
 }

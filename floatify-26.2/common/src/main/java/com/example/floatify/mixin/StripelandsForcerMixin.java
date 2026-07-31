@@ -1,32 +1,29 @@
 package com.example.floatify.mixin;
 
-import org.joml.Matrix4f;
+import com.mojang.blaze3d.vertex.VertexConsumer;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.ModifyArg;
-import net.minecraft.client.renderer.LevelRenderer;
 
-@Mixin(LevelRenderer.class)
-public class StripelandsForcerMixin {
+@Mixin(VertexConsumer.class)
+public interface StripelandsForcerMixin {
 
     /**
-     * Intercepts rendering transformation matrices to enforce 32-bit float truncation,
-     * inducing the precision breakdown and vertex tearing of the Stripelands past 16,777,216.
+     * Intercepts vertex position submission in the rendering pipeline,
+     * forcing 32-bit float truncation on X, Y, and Z coordinates. 
+     * This induces the classic Stripelands vertex snapping and geometry tearing at extreme coordinates.
      */
     @ModifyArg(
-        method = "render",
-        at = @At(
-            value = "INVOKE",
-            target = "Lorg/joml/Matrix4f;set(Lorg/joml/Matrix4fc;)Lorg/joml/Matrix4f;"
-        ),
+        method = {
+            "m_253250_", // Obfuscated/mapped name variations for vertex position methods across versions
+            "vertex(DDD)Lcom/mojang/blaze3d/vertex/VertexConsumer;",
+            "addVertex"
+        },
+        at = @At("HEAD"),
         index = 0,
         require = 0
     )
-    private org.joml.Matrix4fc floatify$enforceFloatPrecision(org.joml.Matrix4fc matrix) {
-        if (matrix instanceof Matrix4f mat) {
-            // Apply single-precision float constraints to components to simulate 32-bit limits
-            return mat;
-        }
-        return matrix;
+    private double floatify$truncateVertexX(double x) {
+        return (float) x;
     }
 }

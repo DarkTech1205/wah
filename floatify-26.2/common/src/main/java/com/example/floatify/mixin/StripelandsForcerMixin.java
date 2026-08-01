@@ -1,12 +1,12 @@
 package com.example.floatify.mixin;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.VertexConsumer;
+import net.minecraft.client.renderer.block.BlockRenderDispatcher;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.RandomSource;
-import net.minecraft.world.level.BlockAndTintGetter;
+import net.minecraft.world.level.BlockGetter; // Updated from BlockAndTintGetter
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.client.renderer.block.BlockRenderDispatcher;
-import com.mojang.blaze3d.vertex.VertexConsumer;
 import org.joml.Matrix4f;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -17,7 +17,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public class StripelandsForcerMixin {
 
     @Inject(method = "renderBatched", at = @At("HEAD"))
-    private void floatify$stretchBlocks(BlockState state, BlockPos pos, BlockAndTintGetter level, PoseStack poseStack, VertexConsumer consumer, boolean checkSides, RandomSource random, CallbackInfo ci) {
+    private void floatify$stretchBlocks(BlockState state, BlockPos pos, BlockGetter level, PoseStack poseStack, VertexConsumer consumer, boolean checkSides, RandomSource random, CallbackInfo ci) {
         int x = pos.getX();
         int y = pos.getY();
         int z = pos.getZ();
@@ -33,7 +33,7 @@ public class StripelandsForcerMixin {
             float qMinZ = (float) z;
             float qMaxZ = (float) (z + 1);
 
-            // 2. Calculate the stretched scale (some blocks collapse to 0, some stretch to 2)
+            // 2. Calculate the stretched scale
             float scaleX = qMaxX - qMinX;
             float scaleY = qMaxY - qMinY;
             float scaleZ = qMaxZ - qMinZ;
@@ -48,12 +48,12 @@ public class StripelandsForcerMixin {
             float newLocalY = qMinY - chunkY;
             float newLocalZ = qMinZ - chunkZ;
 
-            // 5. Override the PoseStack matrix to force the block to stretch and snap!
+            // 5. Override the PoseStack matrix to force the block to stretch and snap
             Matrix4f mat = poseStack.last().pose();
             mat.identity(); // Clear standard chunk local positioning
             mat.translate(newLocalX, newLocalY, newLocalZ);
             
-            // Apply the stretch scale (clamped to 0.001 to prevent lighting division-by-zero crashes)
+            // Apply the stretch scale (clamped to 0.001 to prevent lighting crashes on 0-width collapsed blocks)
             mat.scale(Math.max(0.001f, scaleX), Math.max(0.001f, scaleY), Math.max(0.001f, scaleZ));
         }
     }
